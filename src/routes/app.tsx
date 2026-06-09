@@ -277,11 +277,6 @@ function Workspace() {
               </span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="flex items-center rounded-lg border border-border bg-surface-2 p-0.5">
-                <div className="flex items-center gap-1.5 rounded-md px-2.5 py-1 font-mono text-xs bg-primary text-primary-foreground font-semibold shadow">
-                  <BookOpen className="h-3.5 w-3.5" /> PDF View
-                </div>
-              </div>
               <IconBtn onClick={() => setZoom((z) => Math.max(0.7, z - 0.1))}><ZoomOut className="h-4 w-4" /></IconBtn>
               <span className="min-w-10 text-center font-mono text-[11px] text-muted-foreground">{Math.round(zoom * 100)}%</span>
               <IconBtn onClick={() => setZoom((z) => Math.min(1.6, z + 0.1))}><ZoomIn className="h-4 w-4" /></IconBtn>
