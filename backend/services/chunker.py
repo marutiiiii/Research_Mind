@@ -43,7 +43,7 @@ def chunk_text(full_text: str, chunk_size: int = 500, overlap: int = 100) -> Lis
     return chunks
 
 
-def chunk_by_pages(pages: list, chunk_size: int = 500, overlap: int = 100) -> List[dict]:
+def chunk_by_pages(pages: list, chunk_size: int = 1000, overlap: int = 150) -> List[dict]:
     """
     Same as chunk_text but keeps track of which page each chunk came from.
     Useful for telling the user 'this answer is from page 4'.

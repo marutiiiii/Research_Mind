@@ -3,6 +3,10 @@ from chromadb.utils import embedding_functions
 from pathlib import Path
 from typing import List
 import os
+import time
+import logging
+
+logger = logging.getLogger(__name__)
 
 # ── Setup ──────────────────────────────────────────────────────────────
 
@@ -20,6 +24,18 @@ embedding_fn = embedding_functions.SentenceTransformerEmbeddingFunction(
 
 # Create the ChromaDB client (saves to disk automatically)
 client = chromadb.PersistentClient(path=CHROMA_PATH)
+
+
+def warmup_model():
+    """
+    Pre-load the embedding model by running a dummy embedding.
+    Call this at server startup so the first upload doesn't pay the
+    model loading cost (~5-10s).
+    """
+    logger.info("⏳ Warming up embedding model...")
+    t = time.time()
+    embedding_fn(["warmup"])
+    logger.info(f"✅ Embedding model ready in {time.time() - t:.1f}s")
 
 
 # ── Core Functions ─────────────────────────────────────────────────────

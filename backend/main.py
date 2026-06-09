@@ -1,15 +1,26 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from contextlib import asynccontextmanager
 from pathlib import Path
 from routers import upload, query
 from services.ai_service import GEMINI_MODEL, GEMINI_API_KEY
+from services.vector_store import warmup_model
+import asyncio
 
-app = FastAPI(title="ResearchMind API", version="1.0")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Preload the embedding model in a thread so it doesn't block startup
+    loop = asyncio.get_event_loop()
+    await loop.run_in_executor(None, warmup_model)
+    yield
+
+app = FastAPI(title="ResearchMind API", version="1.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173", "http://localhost:8080"],
+    allow_origins=["http://localhost:5173", "http://localhost:8080", "http://localhost:8081", "http://localhost:3000"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

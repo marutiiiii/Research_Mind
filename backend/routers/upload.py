@@ -1,5 +1,7 @@
 import os
 import uuid
+import asyncio
+import time
 from pathlib import Path
 from fastapi import APIRouter, UploadFile, File, HTTPException
 from services.pdf_service import extract_text_from_pdf
@@ -28,18 +30,21 @@ async def upload_pdf(file: UploadFile = File(...)):
         content = await file.read()
         f.write(content)
 
-    # 3. Extract text
+    # 3. Run CPU-heavy work in a thread pool to avoid blocking the event loop
+    loop = asyncio.get_event_loop()
+
+    # Extract text (CPU-bound)
     try:
-        extracted = extract_text_from_pdf(file_path)
+        extracted = await loop.run_in_executor(None, extract_text_from_pdf, file_path)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"PDF processing failed: {str(e)}")
 
-    # 4. Chunk the text (NEW)
-    chunks = chunk_by_pages(extracted["pages"])
+    # 4. Chunk the text (fast, but still CPU)
+    chunks = await loop.run_in_executor(None, chunk_by_pages, extracted["pages"])
 
-    # 5. Store chunks in ChromaDB (NEW)
+    # 5. Store chunks in ChromaDB (slowest - embeddings generation)
     try:
-        stored_count = store_chunks(unique_id, chunks)
+        stored_count = await loop.run_in_executor(None, store_chunks, unique_id, chunks)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Vector storage failed: {str(e)}")
 
